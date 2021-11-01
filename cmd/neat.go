@@ -78,6 +78,10 @@ func Neat(in string) (string, error) {
 	if err != nil {
 		return draft, fmt.Errorf("error in neatMetadata : %v", err)
 	}
+	draft, err = neatSpacexMetadata(draft)
+	if err != nil {
+		return draft, fmt.Errorf("error in neatSpacexMetadata : %v", err)
+	}
 	draft, err = neatStatus(draft)
 	if err != nil {
 		return draft, fmt.Errorf("error in neatStatus : %v", err)
@@ -90,12 +94,39 @@ func Neat(in string) (string, error) {
 	return draft, nil
 }
 
+func neatSpacexMetadata(in string) (string, error) {
+	var err error
+	spacex_label_path :=
+		[]string{
+			`metadata.labels.starlink\.com/owners`,
+			`metadata.labels.starlink\.spacex\.com/owners`,
+
+			`metadata.labels.starlink\.com/environment`,
+			`metadata.labels.starlink\.spacex\.com/environment`,
+
+			//Typos too
+			`metadata.labels.starlink\.com/enviroment`,
+			`metadata.labels.starlink\.com/location`,
+			`metadata.labels.starlink\.spacex\.com/enviroment`,
+			`metadata.labels.starlink\.spacex\.com/location`,
+			`metadata.labels.tanka\.dev/environment`,
+		}
+	for _, i2 := range spacex_label_path {
+		in, err = sjson.Delete(in, i2)
+		if err != nil {
+			return in, fmt.Errorf("error removong labels metadata : %v", err)
+		}
+	}
+	return in, nil
+}
+
 func neatMetadata(in string) (string, error) {
 	var err error
 	in, err = sjson.Delete(in, `metadata.annotations.kubectl\.kubernetes\.io/last-applied-configuration`)
 	if err != nil {
 		return in, fmt.Errorf("error deleting last-applied-configuration : %v", err)
 	}
+
 	// TODO: prettify this. gjson's @pretty is ok but setRaw the pretty code gives unwanted result
 	newMeta := gjson.Get(in, "{metadata.name,metadata.namespace,metadata.labels,metadata.annotations}")
 	in, err = sjson.Set(in, "metadata", newMeta.Value())

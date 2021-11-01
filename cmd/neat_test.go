@@ -96,6 +96,56 @@ func TestNeatMetadata(t *testing.T) {
 	}
 }
 
+func TestNeatSpacexMetadata(t *testing.T) {
+	cases := []struct {
+		title  string
+		data   string
+		expect string
+	}{
+		{
+			title: "pod metadata",
+			data: `{
+				"metadata": {
+					"labels": {
+						"name": "myapp",
+						"starlink.com/owners": "starlink-sre",
+    					"starlink.com/enviroment": "prod",
+    					"starlink.com/location": "usgovvirginia",
+						"tanka.dev/environment": "efcd11957e5ae2299d24b4b536353399e5414fd5f269fc18"
+					},
+					"name": "myapp",
+					"namespace": "default"
+				}
+			}`,
+			expect: `{
+				"metadata": {
+					"labels": {
+						"name": "myapp"
+					},
+					"name": "myapp",
+					"namespace": "default"
+				}
+			}`,
+		},
+	}
+	for _, c := range cases {
+		resJSON, err := neatSpacexMetadata(c.data)
+		if err != nil {
+			t.Errorf("error in neatSpacexMetadata for case '%s': %v", c.title, err)
+			continue
+		}
+		equal, err := testutil.JSONEqual(resJSON, c.expect)
+		if err != nil {
+			t.Errorf("error in JSONEqual for case '%s': %v", c.title, err)
+			continue
+		}
+		if !equal {
+			t.Errorf("test case '%s' failed. want: '%s' have: '%s'", c.title, c.expect, resJSON)
+		}
+
+	}
+}
+
 func TestNeatScheduler(t *testing.T) {
 	cases := []struct {
 		title  string
