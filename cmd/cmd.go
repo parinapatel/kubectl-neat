@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"unicode"
 
 	"github.com/ghodss/yaml"
@@ -29,10 +30,13 @@ import (
 
 var outputFormat *string
 var inputFile *string
+var addtionalLabels []string
+var labelList *string
 
 func init() {
 	outputFormat = rootCmd.PersistentFlags().StringP("output", "o", "yaml", "output format: yaml or json")
 	inputFile = rootCmd.Flags().StringP("file", "f", "-", "file path to neat, or - to read from stdin")
+	labelList = rootCmd.Flags().StringP("additionalLabels", "l", "", "additional labels to be ignored separated via comma")
 	rootCmd.SetOut(os.Stdout)
 	rootCmd.SetErr(os.Stderr)
 	rootCmd.MarkFlagFilename("file")
@@ -71,6 +75,7 @@ kubectl neat -f ./my-pod.json --output yaml`,
 		if !cmd.Flag("output").Changed {
 			outFormat = "same"
 		}
+		addtionalLabels = strings.Split(*labelList, ",")
 		out, err = NeatYAMLOrJSON(in, outFormat)
 		if err != nil {
 			return err
@@ -119,6 +124,7 @@ kubectl neat get -- svc -n default myservice --output json`,
 		if !cmd.Flag("output").Changed && kubeout == "json" {
 			outFormat = "json"
 		}
+		addtionalLabels = strings.Split(*labelList, ",")
 		out, err = NeatYAMLOrJSON(kres, outFormat)
 		if err != nil {
 			return err

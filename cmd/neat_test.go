@@ -96,7 +96,21 @@ func TestNeatMetadata(t *testing.T) {
 	}
 }
 
-func TestNeatSpacexMetadata(t *testing.T) {
+func TestNeatLabels(t *testing.T) {
+	spacex_labels := []string{
+		"starlink.com/owners",
+		"starlink.spacex.com/owners",
+
+		"starlink.com/environment",
+		"starlink.spacex.com/environment",
+
+		//Typos too
+		"starlink.com/enviroment",
+		"starlink.com/location",
+		"starlink.spacex.com/enviroment",
+		"starlink.spacex.com/location",
+		"tanka.dev/environment",
+	}
 	cases := []struct {
 		title  string
 		data   string
@@ -129,9 +143,9 @@ func TestNeatSpacexMetadata(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		resJSON, err := neatSpacexMetadata(c.data)
+		resJSON, err := neatLabels(c.data, spacex_labels)
 		if err != nil {
-			t.Errorf("error in neatSpacexMetadata for case '%s': %v", c.title, err)
+			t.Errorf("error in neatLabels for case '%s': %v", c.title, err)
 			continue
 		}
 		equal, err := testutil.JSONEqual(resJSON, c.expect)

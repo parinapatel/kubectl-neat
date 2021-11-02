@@ -78,7 +78,21 @@ func Neat(in string) (string, error) {
 	if err != nil {
 		return draft, fmt.Errorf("error in neatMetadata : %v", err)
 	}
-	draft, err = neatSpacexMetadata(draft)
+	spacex_labels := []string{
+		"starlink.com/owners",
+		"starlink.spacex.com/owners",
+
+		"starlink.com/environment",
+		"starlink.spacex.com/environment",
+
+		//Typos too
+		"starlink.com/enviroment",
+		"starlink.com/location",
+		"starlink.spacex.com/enviroment",
+		"starlink.spacex.com/location",
+		"tanka.dev/environment",
+	}
+	draft, err = neatLabels(draft, append(addtionalLabels, spacex_labels...))
 	if err != nil {
 		return draft, fmt.Errorf("error in neatSpacexMetadata : %v", err)
 	}
@@ -94,32 +108,6 @@ func Neat(in string) (string, error) {
 	return draft, nil
 }
 
-func neatSpacexMetadata(in string) (string, error) {
-	var err error
-	spacex_label_path :=
-		[]string{
-			`metadata.labels.starlink\.com/owners`,
-			`metadata.labels.starlink\.spacex\.com/owners`,
-
-			`metadata.labels.starlink\.com/environment`,
-			`metadata.labels.starlink\.spacex\.com/environment`,
-
-			//Typos too
-			`metadata.labels.starlink\.com/enviroment`,
-			`metadata.labels.starlink\.com/location`,
-			`metadata.labels.starlink\.spacex\.com/enviroment`,
-			`metadata.labels.starlink\.spacex\.com/location`,
-			`metadata.labels.tanka\.dev/environment`,
-		}
-	for _, i2 := range spacex_label_path {
-		in, err = sjson.Delete(in, i2)
-		if err != nil {
-			return in, fmt.Errorf("error removong labels metadata : %v", err)
-		}
-	}
-	return in, nil
-}
-
 func neatMetadata(in string) (string, error) {
 	var err error
 	in, err = sjson.Delete(in, `metadata.annotations.kubectl\.kubernetes\.io/last-applied-configuration`)
@@ -132,6 +120,20 @@ func neatMetadata(in string) (string, error) {
 	in, err = sjson.Set(in, "metadata", newMeta.Value())
 	if err != nil {
 		return in, fmt.Errorf("error setting new metadata : %v", err)
+	}
+	return in, nil
+}
+
+func neatLabels(in string, additionalLabels []string) (string, error) {
+	var err error
+	for i, _ := range additionalLabels {
+		additionalLabels[i] = "metadata.labels." + strings.ReplaceAll(additionalLabels[i], ".", "\\.")
+	}
+	for _, i2 := range additionalLabels {
+		in, err = sjson.Delete(in, i2)
+		if err != nil {
+			return in, fmt.Errorf("error removong labels metadata : %v", err)
+		}
 	}
 	return in, nil
 }
