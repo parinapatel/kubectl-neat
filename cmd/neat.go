@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/parinapatel/kubectl-neat/pkg/defaults"
@@ -91,7 +92,10 @@ func Neat(in string) (string, error) {
 		"starlink.spacex.com/enviroment",
 		"starlink.spacex.com/location",
 		"tanka.dev/environment",
+
+
 	}
+	checkAdditionalLabelsEnv()
 	draft, err = neatLabels(draft, append(addtionalLabels, spacex_labels...))
 	if err != nil {
 		return draft, fmt.Errorf("error in neatSpacexMetadata : %v", err)
@@ -106,6 +110,14 @@ func Neat(in string) (string, error) {
 	}
 
 	return draft, nil
+}
+
+func checkAdditionalLabelsEnv() {
+	val , exists := os.LookupEnv("KUBECTL_NEAT_ADDITIONAL_LABELS")
+	if exists {
+		temp_list := strings.Split(val,",")
+		addtionalLabels = append(addtionalLabels, temp_list...)
+	}
 }
 
 func neatMetadata(in string) (string, error) {

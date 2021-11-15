@@ -36,7 +36,7 @@ var labelList *string
 func init() {
 	outputFormat = rootCmd.PersistentFlags().StringP("output", "o", "yaml", "output format: yaml or json")
 	inputFile = rootCmd.Flags().StringP("file", "f", "-", "file path to neat, or - to read from stdin")
-	labelList = rootCmd.Flags().StringP("additionalLabels", "l", "", "additional labels to be ignored separated via comma")
+	labelList = rootCmd.Flags().StringP("additionalLabels", "l", "", "additional labels to be ignored separated via comma. You can add additional labels using KUBECTL_NEAT_ADDITIONAL_LABELS env var too.")
 	rootCmd.SetOut(os.Stdout)
 	rootCmd.SetErr(os.Stderr)
 	rootCmd.MarkFlagFilename("file")
